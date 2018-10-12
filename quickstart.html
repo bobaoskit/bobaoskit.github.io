@@ -419,6 +419,49 @@ bobaos&gt;
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">npm</span> <span class="n">i</span> <span class="o">--</span><span class="n">save</span> <span class="n">bobaos</span><span class="o">.</span><span class="n">sub</span>
 </pre></div>
 </div>
+<p>Then in script:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">BobaosSub</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;bobaos.sub&#39;</span><span class="p">);</span>
+ 
+<span class="kd">let</span> <span class="nx">my</span> <span class="o">=</span> <span class="nx">BobaosSub</span><span class="p">({</span><span class="nx">socketFile</span><span class="o">:</span> <span class="s2">&quot;/var/run/myps/myipc.sock&quot;</span><span class="p">});</span>
+ 
+<span class="nx">my</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;connect&quot;</span><span class="p">,</span> <span class="nx">_</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;connected to ipc, still not subscribed to channels&quot;</span><span class="p">);</span>
+<span class="p">});</span>
+ 
+<span class="nx">my</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;ready&quot;</span><span class="p">,</span> <span class="nx">async</span> <span class="nx">_</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="k">try</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;hello, friend&quot;</span><span class="p">);</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;ping:&quot;</span><span class="p">,</span> <span class="nx">await</span> <span class="nx">my</span><span class="p">.</span><span class="nx">ping</span><span class="p">());</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;get sdk state:&quot;</span><span class="p">,</span> <span class="nx">await</span> <span class="nx">my</span><span class="p">.</span><span class="nx">getSdkState</span><span class="p">());</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;get value:&quot;</span><span class="p">,</span> <span class="nx">await</span> <span class="nx">my</span><span class="p">.</span><span class="nx">getValue</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">107</span><span class="p">,</span> <span class="mi">106</span><span class="p">]));</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;get stored value:&quot;</span><span class="p">,</span> <span class="nx">await</span> <span class="nx">my</span><span class="p">.</span><span class="nx">getValue</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">107</span><span class="p">,</span> <span class="mi">106</span><span class="p">]));</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;get server item:&quot;</span><span class="p">,</span> <span class="nx">await</span> <span class="nx">my</span><span class="p">.</span><span class="nx">getServerItem</span><span class="p">(</span><span class="s2">&quot;SerialNumber&quot;</span><span class="p">));</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;set value:&quot;</span><span class="p">,</span> <span class="nx">await</span> <span class="nx">my</span><span class="p">.</span><span class="nx">setValue</span><span class="p">({</span><span class="nx">id</span><span class="o">:</span> <span class="mi">103</span><span class="p">,</span> <span class="nx">value</span><span class="o">:</span> <span class="mi">0</span><span class="p">}));</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;read value:&quot;</span><span class="p">,</span> <span class="nx">await</span> <span class="nx">my</span><span class="p">.</span><span class="nx">readValue</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">103</span><span class="p">,</span> <span class="mi">104</span><span class="p">,</span> <span class="mi">105</span><span class="p">]));</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;get programming mode:&quot;</span><span class="p">,</span> <span class="nx">await</span> <span class="nx">my</span><span class="p">.</span><span class="nx">getProgrammingMode</span><span class="p">());</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;set programming mode:&quot;</span><span class="p">,</span> <span class="nx">await</span> <span class="nx">my</span><span class="p">.</span><span class="nx">setProgrammingMode</span><span class="p">(</span><span class="kc">true</span><span class="p">));</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;get parameter byte&quot;</span><span class="p">,</span> <span class="nx">await</span> <span class="nx">my</span><span class="p">.</span><span class="nx">getParameterByte</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]));</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;reset&quot;</span><span class="p">,</span> <span class="nx">await</span> <span class="nx">my</span><span class="p">.</span><span class="nx">reset</span><span class="p">());</span>
+  <span class="p">}</span> <span class="k">catch</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;err&quot;</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">message</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+ 
+<span class="nx">my</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;datapoint value&quot;</span><span class="p">,</span> <span class="nx">payload</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;broadcasted datapoint value: &quot;</span><span class="p">,</span> <span class="nx">payload</span><span class="p">);</span>
+<span class="p">});</span>
+ 
+<span class="nx">my</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;server item&quot;</span><span class="p">,</span> <span class="nx">payload</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;broadcasted server item: &quot;</span><span class="p">,</span> <span class="nx">payload</span><span class="p">);</span>
+<span class="p">});</span>
+ 
+<span class="nx">my</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;sdk state&quot;</span><span class="p">,</span> <span class="nx">payload</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;broadcasted sdk state: &quot;</span><span class="p">,</span> <span class="nx">payload</span><span class="p">);</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p>There will be more info on API, but for now this is the end. The very end, my friend.</p>
+<p>Thank you for attention.</p>
 </div>
 </div>
 
