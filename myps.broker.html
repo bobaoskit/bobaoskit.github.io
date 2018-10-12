@@ -1,0 +1,232 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>myps.broker &#8212; bobaos  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="myps.logviewer" href="myps.logviewer.html" />
+    <link rel="prev" title="Introduction" href="intro.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="myps-broker">
+<span id="myps-broker"></span><h1>myps.broker<a class="headerlink" href="#myps-broker" title="Permalink to this headline">¶</a></h1>
+<p>myps stands for MyPubSub, a small service that implementing publish/subscribe model over  Unix Domain Socket</p>
+<div class="section" id="usage">
+<span id="usage"></span><h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ myps.broker --help
+Options:
+  --help          Show help                                            [boolean]
+  --version       Show version number                                  [boolean]
+  --sockfile, -s  path to socket file. Default: ${process.cwd()}/myipc.sock&#39;
+  --debug, -d     debug output true/false
+</pre></div>
+</div>
+</div>
+<div class="section" id="protocol">
+<span id="protocol"></span><h2>Protocol<a class="headerlink" href="#protocol" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="overview">
+<span id="overview"></span><h3>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
+<p>It uses JSON messages encapsulated into BDSM frame to communicate between broker and clients.</p>
+<p><code class="docutils literal notranslate"><span class="pre">|B|D|S|M|&lt;LB&gt;|&lt;LE&gt;|&lt;DATA&gt;|&lt;C&gt;|</span></code></p>
+<p>where DATA is JSON message, <code class="docutils literal notranslate"><span class="pre">&lt;L&gt;</span></code> is two byte field in BE that contains length of <code class="docutils literal notranslate"><span class="pre">&lt;DATA&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">&lt;C&gt;</span></code> is checksum of <code class="docutils literal notranslate"><span class="pre">&lt;DATA&gt;</span></code> (sum of all bytes modulo 256). <code class="docutils literal notranslate"><span class="pre">BDSM</span></code> is a string header of message.</p>
+</div>
+<div class="section" id="json-message">
+<span id="json-message"></span><h3>JSON message<a class="headerlink" href="#json-message" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">DATA</span></code> field is a JSON message that uses <code class="docutils literal notranslate"><span class="pre">method</span></code> and <code class="docutils literal notranslate"><span class="pre">payload</span></code> fields as required. For requests from client also <code class="docutils literal notranslate"><span class="pre">request_id</span></code> field may be used.</p>
+<div class="section" id="messages-sent-from-server-method-field">
+<span id="messages-sent-from-server-method-field"></span><h4>Messages sent from server. <code class="docutils literal notranslate"><span class="pre">method</span></code> field.<a class="headerlink" href="#messages-sent-from-server-method-field" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="greeting-sends-server-when-client-connected-as-a-payload-it-transmits-connection-id-method-greeting-payload-1317678194084">
+<span id="greeting-sends-server-when-client-connected-as-a-payload-it-transmits-connection-id-method-greeting-payload-1317678194084"></span><h5><code class="docutils literal notranslate"><span class="pre">greeting</span></code> sends server when client connected. As a payload it transmits connection id. <code class="docutils literal notranslate"><span class="pre">{&quot;method&quot;:</span> <span class="pre">&quot;greeting&quot;,</span> <span class="pre">&quot;payload&quot;:</span> <span class="pre">1317678194084}</span></code>.<a class="headerlink" href="#greeting-sends-server-when-client-connected-as-a-payload-it-transmits-connection-id-method-greeting-payload-1317678194084" title="Permalink to this headline">¶</a></h5>
+</div>
+<div class="section" id="message-client-receives-when-a-message-on-subscribed-topic-occured-method-message-payload-topic-given-topic-message-given-message-connection-id-42">
+<span id="message-client-receives-when-a-message-on-subscribed-topic-occured-method-message-payload-topic-given-topic-message-given-message-connection-id-42"></span><h5><code class="docutils literal notranslate"><span class="pre">message</span></code> client receives when a message on subscribed topic occured. <code class="docutils literal notranslate"><span class="pre">{&quot;method&quot;:</span> <span class="pre">&quot;message&quot;,</span> <span class="pre">&quot;payload&quot;:</span> <span class="pre">{&quot;topic&quot;:</span> <span class="pre">&quot;given</span> <span class="pre">topic&quot;,</span> <span class="pre">&quot;message&quot;:</span> <span class="pre">&quot;given</span> <span class="pre">message&quot;,</span> <span class="pre">&quot;connection_id&quot;:</span> <span class="pre">42}}</span></code>.<a class="headerlink" href="#message-client-receives-when-a-message-on-subscribed-topic-occured-method-message-payload-topic-given-topic-message-given-message-connection-id-42" title="Permalink to this headline">¶</a></h5>
+</div>
+<div class="section" id="success-signals-that-request-was-successful-response-id-42-method-success-payload-something">
+<span id="success-signals-that-request-was-successful-response-id-42-method-success-payload-something"></span><h5><code class="docutils literal notranslate"><span class="pre">success</span></code> signals that request was successful <code class="docutils literal notranslate"><span class="pre">{&quot;response_id&quot;:</span> <span class="pre">42,</span> <span class="pre">&quot;method&quot;:</span> <span class="pre">&quot;success&quot;,</span> <span class="pre">&quot;payload&quot;:</span> <span class="pre">&quot;something&quot;}</span></code>.<a class="headerlink" href="#success-signals-that-request-was-successful-response-id-42-method-success-payload-something" title="Permalink to this headline">¶</a></h5>
+</div>
+<div class="section" id="error-signals-that-something-went-wrong-with-request-response-id-42-method-error-payload-error-description">
+<span id="error-signals-that-something-went-wrong-with-request-response-id-42-method-error-payload-error-description"></span><h5><code class="docutils literal notranslate"><span class="pre">error</span></code> signals that something went wrong with request <code class="docutils literal notranslate"><span class="pre">{&quot;response_id&quot;:</span> <span class="pre">42,</span> <span class="pre">&quot;method&quot;:</span> <span class="pre">&quot;error&quot;,</span> <span class="pre">&quot;payload&quot;:</span> <span class="pre">&quot;error</span> <span class="pre">description&quot;}</span></code>.<a class="headerlink" href="#error-signals-that-something-went-wrong-with-request-response-id-42-method-error-payload-error-description" title="Permalink to this headline">¶</a></h5>
+</div>
+</div>
+<div class="section" id="messages-sent-from-client-to-server-method-field">
+<span id="messages-sent-from-client-to-server-method-field"></span><h4>Messages sent from client to server. <code class="docutils literal notranslate"><span class="pre">method</span></code> field.<a class="headerlink" href="#messages-sent-from-client-to-server-method-field" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="subscribe-server-receives-when-client-wants-to-subscribe-to-topic-given-in-payload-request-id-42-method-subscribe-payload-given-topic">
+<span id="subscribe-server-receives-when-client-wants-to-subscribe-to-topic-given-in-payload-request-id-42-method-subscribe-payload-given-topic"></span><h5><code class="docutils literal notranslate"><span class="pre">subscribe</span></code> server receives when client wants to subscribe to topic given in <code class="docutils literal notranslate"><span class="pre">payload</span></code>. <code class="docutils literal notranslate"><span class="pre">{&quot;request_id&quot;:</span> <span class="pre">42,</span> <span class="pre">&quot;method&quot;:</span> <span class="pre">&quot;subscribe&quot;,</span> <span class="pre">&quot;payload&quot;:</span> <span class="pre">&quot;given</span> <span class="pre">topic&quot;}</span></code>.<a class="headerlink" href="#subscribe-server-receives-when-client-wants-to-subscribe-to-topic-given-in-payload-request-id-42-method-subscribe-payload-given-topic" title="Permalink to this headline">¶</a></h5>
+</div>
+<div class="section" id="unsubscribe-when-client-want-to-unsubscribe-request-id-42-method-unsubscribe-payload-given-topic">
+<span id="unsubscribe-when-client-want-to-unsubscribe-request-id-42-method-unsubscribe-payload-given-topic"></span><h5><code class="docutils literal notranslate"><span class="pre">unsubscribe</span></code> when client want to unsubscribe <code class="docutils literal notranslate"><span class="pre">{&quot;request_id&quot;:</span> <span class="pre">42,</span> <span class="pre">&quot;method&quot;:</span> <span class="pre">&quot;unsubscribe&quot;,</span> <span class="pre">&quot;payload&quot;:</span> <span class="pre">&quot;given</span> <span class="pre">topic&quot;}</span></code>.<a class="headerlink" href="#unsubscribe-when-client-want-to-unsubscribe-request-id-42-method-unsubscribe-payload-given-topic" title="Permalink to this headline">¶</a></h5>
+</div>
+<div class="section" id="publish-client-sends-when-want-to-publish-message-to-topic-request-id-42-method-publish-payload-topic-given-topic-message-given-string-message-or-object">
+<span id="publish-client-sends-when-want-to-publish-message-to-topic-request-id-42-method-publish-payload-topic-given-topic-message-given-string-message-or-object"></span><h5><code class="docutils literal notranslate"><span class="pre">publish</span></code> client sends when want to publish message to topic. <code class="docutils literal notranslate"><span class="pre">{&quot;request_id&quot;:</span> <span class="pre">42,</span> <span class="pre">&quot;method&quot;:</span> <span class="pre">&quot;publish&quot;,</span> <span class="pre">&quot;payload&quot;:</span> <span class="pre">{&quot;topic&quot;:</span> <span class="pre">&quot;given</span> <span class="pre">topic&quot;,</span> <span class="pre">&quot;message&quot;:</span> <span class="pre">&quot;given</span> <span class="pre">string</span> <span class="pre">message</span> <span class="pre">or</span> <span class="pre">object&quot;}</span></code>.<a class="headerlink" href="#publish-client-sends-when-want-to-publish-message-to-topic-request-id-42-method-publish-payload-topic-given-topic-message-given-string-message-or-object" title="Permalink to this headline">¶</a></h5>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="installing">
+<span id="installing"></span><h2>Installing<a class="headerlink" href="#installing" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">npm</span> <span class="n">i</span> <span class="o">-</span><span class="n">g</span> <span class="n">myps</span><span class="o">.</span><span class="n">broker</span><span class="nd">@latests</span>
+</pre></div>
+</div>
+<p>I would advice to run myps.broker as a systemd daemon using followind service file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">vim</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">myps</span><span class="o">.</span><span class="n">service</span>
+</pre></div>
+</div>
+<p>Edit content of this file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Unit</span><span class="p">]</span>
+<span class="n">Description</span><span class="o">=</span><span class="n">PubSub</span> <span class="n">service</span> <span class="n">running</span> <span class="n">on</span> <span class="n">nodejs</span>
+
+<span class="p">[</span><span class="n">Service</span><span class="p">]</span>
+<span class="n">User</span><span class="o">=</span><span class="n">yourusername</span>
+<span class="n">ExecStart</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">env</span> <span class="n">myps</span><span class="o">-</span><span class="n">broker</span>
+<span class="n">Restart</span><span class="o">=</span><span class="n">on</span><span class="o">-</span><span class="n">failure</span>
+<span class="n">RestartSec</span><span class="o">=</span><span class="mi">10</span>
+<span class="n">RuntimeDirectory</span><span class="o">=</span><span class="n">myps</span>
+<span class="n">RuntimeDirectoryMode</span><span class="o">=</span><span class="mi">0775</span>
+<span class="c1"># and now working dir.</span>
+<span class="c1"># make sure it is located at `/run/${RuntimeDirectory}`</span>
+<span class="c1"># which is in this example myps</span>
+<span class="n">WorkingDirectory</span><span class="o">=/</span><span class="n">run</span><span class="o">/</span><span class="n">myps</span>
+
+<span class="p">[</span><span class="n">Install</span><span class="p">]</span>
+<span class="n">WantedBy</span><span class="o">=</span><span class="n">multi</span><span class="o">-</span><span class="n">user</span><span class="o">.</span><span class="n">target</span>
+</pre></div>
+</div>
+<p>Enable and start service:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">daemon</span><span class="o">-</span><span class="n">reload</span>
+<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">enable</span> <span class="n">myps</span><span class="o">.</span><span class="n">service</span>
+<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">start</span> <span class="n">myps</span><span class="o">.</span><span class="n">service</span>
+</pre></div>
+</div>
+<p>Check status:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>systemctl status myps.service
+● myps.service - PubSub service running on nodejs
+   Loaded: loaded (/etc/systemd/system/myps.service; enabled; vendor preset: disabled)
+   Active: active (running) since Wed 2018-09-12 13:51:54 MSK; 2min 49s ago
+ Main PID: 31066 (node)
+    Tasks: 11 (limit: 4915)
+   Memory: 12.0M
+   CGroup: /system.slice/myps.service
+           └─31066 node /usr/bin/myps-broker
+
+Sep 12 13:51:54 the-undefeated systemd[1]: Started PubSub service running on nodejs.
+</pre></div>
+</div>
+<p>Check if runtime directory was created:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ls</span> <span class="o">-</span><span class="n">hlatr</span> <span class="o">/</span><span class="n">run</span>
+<span class="o">.......</span>
+<span class="n">drwxr</span><span class="o">-</span><span class="n">xr</span><span class="o">-</span><span class="n">x</span>  <span class="mi">7</span> <span class="n">root</span>       <span class="n">root</span>      <span class="mi">160</span> <span class="n">Sep</span> <span class="mi">12</span> <span class="mi">13</span><span class="p">:</span><span class="mi">21</span> <span class="n">udev</span>
+<span class="n">drwxr</span><span class="o">-</span><span class="n">xr</span><span class="o">-</span><span class="n">x</span> <span class="mi">27</span> <span class="n">root</span>       <span class="n">root</span>      <span class="mi">640</span> <span class="n">Sep</span> <span class="mi">12</span> <span class="mi">13</span><span class="p">:</span><span class="mi">51</span> <span class="o">.</span>
+<span class="n">drwxrwxr</span><span class="o">-</span><span class="n">x</span>  <span class="mi">2</span> <span class="n">undefeated</span> <span class="n">lp</span>         <span class="mi">60</span> <span class="n">Sep</span> <span class="mi">12</span> <span class="mi">13</span><span class="p">:</span><span class="mi">51</span> <span class="n">myps</span>
+<span class="n">drwxr</span><span class="o">-</span><span class="n">xr</span><span class="o">-</span><span class="n">x</span> <span class="mi">18</span> <span class="n">root</span>       <span class="n">root</span>      <span class="mi">440</span> <span class="n">Sep</span> <span class="mi">12</span> <span class="mi">13</span><span class="p">:</span><span class="mi">52</span> <span class="n">systemd</span>
+</pre></div>
+</div>
+<p>As you can see in example, there is myps directory, so look inside it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ls</span> <span class="o">-</span><span class="n">hlatr</span> <span class="o">/</span><span class="n">run</span><span class="o">/</span><span class="n">myps</span>
+<span class="n">total</span> <span class="mi">0</span>
+<span class="n">drwxr</span><span class="o">-</span><span class="n">xr</span><span class="o">-</span><span class="n">x</span> <span class="mi">27</span> <span class="n">root</span>       <span class="n">root</span> <span class="mi">640</span> <span class="n">Sep</span> <span class="mi">12</span> <span class="mi">13</span><span class="p">:</span><span class="mi">51</span> <span class="o">..</span>
+<span class="n">srwxr</span><span class="o">-</span><span class="n">xr</span><span class="o">-</span><span class="n">x</span>  <span class="mi">1</span> <span class="n">undefeated</span> <span class="n">lp</span>     <span class="mi">0</span> <span class="n">Sep</span> <span class="mi">12</span> <span class="mi">13</span><span class="p">:</span><span class="mi">51</span> <span class="n">myipc</span><span class="o">.</span><span class="n">sock</span>
+<span class="n">drwxrwxr</span><span class="o">-</span><span class="n">x</span>  <span class="mi">2</span> <span class="n">undefeated</span> <span class="n">lp</span>    <span class="mi">60</span> <span class="n">Sep</span> <span class="mi">12</span> <span class="mi">13</span><span class="p">:</span><span class="mi">51</span> <span class="o">.</span>
+</pre></div>
+</div>
+<p>That’s it. Now we can use it for own purposes.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">bobaos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">myps.broker</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#protocol">Protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing">Installing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="myps.logviewer.html">myps.logviewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bobaos.pub.html">bobaos.pub</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bobaos.tool.html">bobaos.tool - bobaos.pub/sub cli</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="intro.html" title="previous chapter">Introduction</a></li>
+      <li>Next: <a href="myps.logviewer.html" title="next chapter">myps.logviewer</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Vladimir Shabunin.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="_sources/myps.broker.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
