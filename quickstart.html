@@ -38,157 +38,80 @@
 <span id="hardware-configuration"></span><h2>hardware configuration<a class="headerlink" href="#hardware-configuration" title="Permalink to this headline">¶</a></h2>
 <p>Assuming that Raspberry Pi 3 is used.</p>
 <p>The Raspberry Pi 3 does not use the correct baud rate in Raspian out of the box, so kBerry will not work. To fix this, the overlay pi3-miniuart-bt-overlay must be activated.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">sh</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;echo dtoverlay=pi3-miniuart-bt &gt;&gt;/boot/config.txt&quot;</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>sudo sh -c &quot;echo dtoverlay=pi3-miniuart-bt &gt;&gt;/boot/config.txt&quot;
 </pre></div>
 </div>
 <p>Open /boot/cmdline.txt and remove console=ttyAMA0,115200 from the file For Raspbian Jessie and newer the entry is console=serial0,115200</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">nano</span> <span class="o">/</span><span class="n">boot</span><span class="o">/</span><span class="n">cmdline</span><span class="o">.</span><span class="n">txt</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>sudo nano /boot/cmdline.txt
 </pre></div>
 </div>
 <p>Make sure the user has the rights to access the ttyAMA0</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check the group of the device</span>
-<span class="n">ls</span> <span class="o">-</span><span class="n">l</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">ttyAMA0</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># Check the group of the device
+ls -l /dev/ttyAMA0
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">crw</span><span class="o">-</span><span class="n">rw</span><span class="o">----</span> <span class="mi">1</span> <span class="n">root</span> <span class="n">dialout</span> <span class="mi">204</span><span class="p">,</span> <span class="mi">64</span> <span class="n">Aug</span>  <span class="mi">4</span> <span class="mi">11</span><span class="p">:</span><span class="mi">33</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">ttyAMA0</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>crw-rw---- 1 root dialout 204, 64 Aug  4 11:33 /dev/ttyAMA0
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add the user to the group seen above</span>
-<span class="n">sudo</span> <span class="n">usermod</span> <span class="o">-</span><span class="n">a</span> <span class="o">-</span><span class="n">G</span> <span class="n">dialout</span> <span class="n">pi</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span># Add the user to the group seen above
+sudo usermod -a -G dialout pi
 </pre></div>
 </div>
 <p>After reboot proceed to next steps.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">reboot</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>sudo reboot
 </pre></div>
 </div>
 </div>
-<div class="section" id="myps-broker">
-<span id="myps-broker"></span><h2>myps.broker<a class="headerlink" href="#myps-broker" title="Permalink to this headline">¶</a></h2>
-<p>Bobaos.Kit communicates over publish/subscribe service, implemented in nodejs: myps(MyPubSub). So, install it at first and create a service.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">npm</span> <span class="n">i</span> <span class="o">-</span><span class="n">g</span> <span class="n">myps</span><span class="o">.</span><span class="n">broker</span>
+<div class="section" id="node-js">
+<span id="node-js"></span><h2>Node.js<a class="headerlink" href="#node-js" title="Permalink to this headline">¶</a></h2>
+<p>Install <a class="reference external" href="https://nodejs.org">nodejs</a></p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+sudo apt-get install -y nodejs
 </pre></div>
 </div>
-<p>Create service for systemd:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">nano</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">myps</span><span class="o">.</span><span class="n">service</span>
+<p><a class="reference external" href="https://github.com/nodesource/distributions/blob/master/README.md">More info</a></p>
+</div>
+<div class="section" id="redis">
+<span id="redis"></span><h2>Redis<a class="headerlink" href="#redis" title="Permalink to this headline">¶</a></h2>
+<p>bobaos.pub broadcasts events over publish/subscribe and uses queues backed by <a class="reference external" href="https://redis.io/">Redis</a>. So, install it at first and start service.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>sudo apt install redis-server
+sudo systemctl daemon-reload
+sudo systemctl enable redis.service
+sudo systemctl start redis.service
 </pre></div>
 </div>
-<p>Add following content:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Unit</span><span class="p">]</span>
-<span class="n">Description</span><span class="o">=</span><span class="n">PubSub</span> <span class="n">service</span> <span class="n">running</span> <span class="n">on</span> <span class="n">nodejs</span>
-
-<span class="p">[</span><span class="n">Service</span><span class="p">]</span>
-<span class="n">User</span><span class="o">=</span><span class="n">pi</span>
-<span class="n">ExecStart</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">env</span> <span class="n">myps</span><span class="o">-</span><span class="n">broker</span>
-<span class="n">Restart</span><span class="o">=</span><span class="n">on</span><span class="o">-</span><span class="n">failure</span>
-<span class="n">RestartSec</span><span class="o">=</span><span class="mi">10</span>
-<span class="n">RuntimeDirectory</span><span class="o">=</span><span class="n">myps</span>
-<span class="n">RuntimeDirectoryMode</span><span class="o">=</span><span class="mi">0775</span>
-<span class="c1"># and now working dir.</span>
-<span class="c1"># make sure it is located at `/run/${RuntimeDirectory}`</span>
-<span class="c1"># which is in this example myps</span>
-<span class="n">WorkingDirectory</span><span class="o">=/</span><span class="n">run</span><span class="o">/</span><span class="n">myps</span>
-
-<span class="p">[</span><span class="n">Install</span><span class="p">]</span>
-<span class="n">WantedBy</span><span class="o">=</span><span class="n">multi</span><span class="o">-</span><span class="n">user</span><span class="o">.</span><span class="n">target</span>
-</pre></div>
-</div>
-<p>Service file contains <strong>RuntimeDirectory</strong> and <strong>WorkingDirectory</strong> config values, so with this service file, socket file <strong>myipc.sock</strong> can be found at <strong>/var/run/myipc.sock</strong>.</p>
-<p>Enable and start service:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">daemon</span><span class="o">-</span><span class="n">reload</span>
-<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">enable</span> <span class="n">myps</span><span class="o">.</span><span class="n">service</span>
-<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">start</span> <span class="n">myps</span><span class="o">.</span><span class="n">service</span>
-</pre></div>
-</div>
-<p>Check status:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>systemctl status myps.service
-● myps.service - PubSub service running on nodejs
-   Loaded: loaded (/etc/systemd/system/myps.service; enabled; vendor preset: disabled)
-   Active: active (running) since Wed 2018-09-12 13:51:54 MSK; 2min 49s ago
- Main PID: 31066 (node)
-    Tasks: 11 (limit: 4915)
-   Memory: 12.0M
-   CGroup: /system.slice/myps.service
-           └─31066 node /usr/bin/myps-broker
-
-Sep 12 13:51:54 pi systemd[1]: Started PubSub service running on nodejs.
-</pre></div>
-</div>
-<p>Check if runtime directory was created and look inside it:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ls</span> <span class="o">-</span><span class="n">hlatr</span> <span class="o">/</span><span class="n">run</span>
-<span class="o">.......</span>
-<span class="n">drwxr</span><span class="o">-</span><span class="n">xr</span><span class="o">-</span><span class="n">x</span>  <span class="mi">7</span> <span class="n">root</span>       <span class="n">root</span>      <span class="mi">160</span> <span class="n">Sep</span> <span class="mi">12</span> <span class="mi">13</span><span class="p">:</span><span class="mi">21</span> <span class="n">udev</span>
-<span class="n">drwxr</span><span class="o">-</span><span class="n">xr</span><span class="o">-</span><span class="n">x</span> <span class="mi">27</span> <span class="n">root</span>       <span class="n">root</span>      <span class="mi">640</span> <span class="n">Sep</span> <span class="mi">12</span> <span class="mi">13</span><span class="p">:</span><span class="mi">51</span> <span class="o">.</span>
-<span class="n">drwxrwxr</span><span class="o">-</span><span class="n">x</span>  <span class="mi">2</span> <span class="n">pi</span>         <span class="n">lp</span>         <span class="mi">60</span> <span class="n">Sep</span> <span class="mi">12</span> <span class="mi">13</span><span class="p">:</span><span class="mi">51</span> <span class="n">myps</span>
-<span class="n">drwxr</span><span class="o">-</span><span class="n">xr</span><span class="o">-</span><span class="n">x</span> <span class="mi">18</span> <span class="n">root</span>       <span class="n">root</span>      <span class="mi">440</span> <span class="n">Sep</span> <span class="mi">12</span> <span class="mi">13</span><span class="p">:</span><span class="mi">52</span> <span class="n">systemd</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ls</span> <span class="o">-</span><span class="n">hlatr</span> <span class="o">/</span><span class="n">run</span><span class="o">/</span><span class="n">myps</span>
-<span class="n">total</span> <span class="mi">0</span>
-<span class="n">drwxr</span><span class="o">-</span><span class="n">xr</span><span class="o">-</span><span class="n">x</span> <span class="mi">27</span> <span class="n">root</span>       <span class="n">root</span> <span class="mi">640</span> <span class="n">Sep</span> <span class="mi">12</span> <span class="mi">13</span><span class="p">:</span><span class="mi">51</span> <span class="o">..</span>
-<span class="n">srwxr</span><span class="o">-</span><span class="n">xr</span><span class="o">-</span><span class="n">x</span>  <span class="mi">1</span> <span class="n">pi</span>         <span class="n">lp</span>     <span class="mi">0</span> <span class="n">Sep</span> <span class="mi">12</span> <span class="mi">13</span><span class="p">:</span><span class="mi">51</span> <span class="n">myipc</span><span class="o">.</span><span class="n">sock</span>
-<span class="n">drwxrwxr</span><span class="o">-</span><span class="n">x</span>  <span class="mi">2</span> <span class="n">pi</span>         <span class="n">lp</span>    <span class="mi">60</span> <span class="n">Sep</span> <span class="mi">12</span> <span class="mi">13</span><span class="p">:</span><span class="mi">51</span> <span class="o">.</span>
-</pre></div>
-</div>
-<p>That’s it. Proceed to next steps.</p>
-</div>
-<div class="section" id="myps-logviewer">
-<span id="myps-logviewer"></span><h2>myps.logviewer<a class="headerlink" href="#myps-logviewer" title="Permalink to this headline">¶</a></h2>
-<p>All logging in bobaos.kit I implemented over myps service. Logs in real time can be viewed via util called <strong>myps.logviewer</strong>. Keep in mind, that it doesn’t store any log data, just in real time.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">npm</span> <span class="n">i</span> <span class="o">-</span><span class="n">g</span> <span class="n">myps</span><span class="o">.</span><span class="n">logviewer</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">myps</span><span class="o">-</span><span class="n">logviewer</span> <span class="o">-</span><span class="n">c</span> <span class="n">bobaos_logs</span>
-</pre></div>
-</div>
-<p>If bobaos.pub package is not installed and started yet then there will be only one word in console output: <strong>connected</strong>.</p>
+<p>Check with <code class="docutils literal notranslate"><span class="pre">redis-cli</span></code> if it is running. If not, reboot and try testing with <code class="docutils literal notranslate"><span class="pre">redis-cli</span></code> again.</p>
 </div>
 <div class="section" id="bobaos-pub">
 <span id="bobaos-pub"></span><h2>bobaos.pub<a class="headerlink" href="#bobaos-pub" title="Permalink to this headline">¶</a></h2>
 <p>Now, let install working service for BAOS sdk.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">npm</span> <span class="n">i</span> <span class="o">-</span><span class="n">g</span> <span class="n">bobaos</span><span class="o">.</span><span class="n">pub</span> <span class="o">--</span><span class="n">unsafe</span><span class="o">-</span><span class="n">perm</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>sudo npm i -g bobaos.pub --unsafe-perm
 </pre></div>
 </div>
 <p>After that, edit config file located at <strong>/usr/lib/node_modules/bobaos.pub/config.json</strong> and replace default <strong>/dev/ttyS1</strong> to <strong>/dev/ttyAMA0</strong>.</p>
 <p>Create service file for systemd:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">nano</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">systemd</span><span class="o">/</span><span class="n">system</span><span class="o">/</span><span class="n">bobaos_pub</span><span class="o">.</span><span class="n">service</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>sudo nano /etc/systemd/system/bobaos_pub.service
 </pre></div>
 </div>
 <p>Use following content for this file:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Unit</span><span class="p">]</span>
-<span class="n">Description</span><span class="o">=</span><span class="n">PubSub</span> <span class="n">service</span> <span class="n">running</span> <span class="n">on</span> <span class="n">nodejs</span>
-<span class="n">After</span><span class="o">=</span><span class="n">myps</span><span class="o">.</span><span class="n">service</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[Unit]
+Description=PubSub service running on nodejs
+After=redis.service
 
-<span class="p">[</span><span class="n">Service</span><span class="p">]</span>
-<span class="n">User</span><span class="o">=</span><span class="n">pi</span>
-<span class="n">ExecStart</span><span class="o">=/</span><span class="n">usr</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">env</span> <span class="n">bobaos</span><span class="o">-</span><span class="n">pub</span>
-<span class="n">Restart</span><span class="o">=</span><span class="n">on</span><span class="o">-</span><span class="n">failure</span>
-<span class="n">RestartSec</span><span class="o">=</span><span class="mi">10</span>
-<span class="c1"># and now working dir.</span>
-<span class="c1"># make sure it is located at `/run/${RuntimeDirectory}`</span>
-<span class="c1"># which is in this example myps</span>
-<span class="n">WorkingDirectory</span><span class="o">=/</span><span class="n">run</span><span class="o">/</span><span class="n">myps</span>
+[Service]
+User=pi
+ExecStart=/usr/bin/env bobaos-pub
+Restart=on-failure
+RestartSec=10
 
-<span class="p">[</span><span class="n">Install</span><span class="p">]</span>
-<span class="n">WantedBy</span><span class="o">=</span><span class="n">multi</span><span class="o">-</span><span class="n">user</span><span class="o">.</span><span class="n">target</span>
+[Install]
+WantedBy=multi-user.target
 </pre></div>
 </div>
 <p>Reload systemd daemon, enable and start service.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">daemon</span><span class="o">-</span><span class="n">reload</span>
-<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">enable</span> <span class="n">bobaos_pub</span><span class="o">.</span><span class="n">service</span>
-<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">start</span> <span class="n">bobaos_pub</span><span class="o">.</span><span class="n">service</span>
-</pre></div>
-</div>
-<p>If <strong>myps.logviewer</strong> package is running then it will log output into console:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bobaos_ipc</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">20</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">07</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;Connected to pubsub as 655590131100&quot;</span><span class="p">]</span>
-<span class="n">bobaos_ipc</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">20</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">07</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;Listening topic bobaos_req&quot;</span><span class="p">]</span>
-<span class="n">bobaos</span><span class="o">.</span><span class="n">pub</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">20</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">07</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;IPC ready&quot;</span><span class="p">]</span>
-<span class="n">bobaos_sdk</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">20</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">07</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;Serialport opened&quot;</span><span class="p">]</span>
-<span class="n">bobaos_sdk</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">20</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">07</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;Loading server items&quot;</span><span class="p">]</span>
-<span class="n">bobaos_sdk</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">20</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">07</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;Server items loaded&quot;</span><span class="p">]</span>
-<span class="n">bobaos_sdk</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">20</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">07</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;Loading datapoints. Setting indication to false&quot;</span><span class="p">]</span>
-<span class="n">bobaos_sdk</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">20</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">08</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;All datapoints [79] loaded. Return indications to true&quot;</span><span class="p">]</span>
-<span class="n">bobaos_sdk</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">20</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">08</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;Bobaos SDK ready. Emitting event&quot;</span><span class="p">]</span>
-<span class="n">bobaos</span><span class="o">.</span><span class="n">pub</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">20</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">08</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;Connected to BAOS. SDK ready.&quot;</span><span class="p">]</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>sudo systemctl daemon-reload
+sudo systemctl enable bobaos_pub.service
+sudo systemctl start bobaos_pub.service
 </pre></div>
 </div>
 <p>Proceed to final steps.</p>
@@ -196,11 +119,11 @@ Sep 12 13:51:54 pi systemd[1]: Started PubSub service running on nodejs.
 <div class="section" id="bobaos-tool">
 <span id="bobaos-tool"></span><h2>bobaos.tool<a class="headerlink" href="#bobaos-tool" title="Permalink to this headline">¶</a></h2>
 <p>To control datapoint values from shell, bobaos.tool package is used.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">npm</span> <span class="n">i</span> <span class="o">-</span><span class="n">g</span> <span class="n">bobaos</span><span class="o">.</span><span class="n">tool</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>sudo npm i -g bobaos.tool
 </pre></div>
 </div>
 <p>Run and ping sdk:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>~$ bobaos-tool
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>~$ bobaos-tool
 hello, friend
 connecting to /var/run/myps/myipc.sock
 connected to ipc, still not subscribed to channels
@@ -219,7 +142,7 @@ bobaos&gt; help
 
 :: BAOS services:
 ::&gt; getbyte ( 1 2 3 | [1, 2, 3] )
-::  getitem ( * | ServerItem1 Item2... | [Item1, Item2, ..] )
+::  getitem ( * | 1 2 ..17 | [1, 2, ..17] )
 ::&gt; progmode ( ? | true/false/1/0 )
 
 :: General:
@@ -232,21 +155,13 @@ ping: true
 bobaos&gt;
 </pre></div>
 </div>
-<p>On every request bobaos.pub will log debug info that can be viewer in myps.logviewer:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bobaos</span><span class="o">.</span><span class="n">pub</span><span class="p">::</span> <span class="n">debug</span><span class="p">::</span> <span class="mi">20</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">57</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;Incoming request: &quot;</span><span class="p">]</span>
-<span class="n">bobaos</span><span class="o">.</span><span class="n">pub</span><span class="p">::</span> <span class="n">debug</span><span class="p">::</span> <span class="mi">20</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">58</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;method: ping&quot;</span><span class="p">]</span>
-<span class="n">bobaos</span><span class="o">.</span><span class="n">pub</span><span class="p">::</span> <span class="n">debug</span><span class="p">::</span> <span class="mi">20</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">58</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;payload: null&quot;</span><span class="p">]</span>
-<span class="n">bobaos</span><span class="o">.</span><span class="n">pub</span><span class="p">::</span> <span class="n">debug</span><span class="p">::</span> <span class="mi">20</span><span class="p">:</span><span class="mi">22</span><span class="p">:</span><span class="mi">58</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;response_channel: bobaos_res_26807&quot;</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>It is not necessary to view this logs but may be helpful in debugging.</p>
-<p>But let’s return to <strong>bobaos-tool</strong>. Some command examples:</p>
+<p>Some command examples:</p>
 <ul class="simple">
 <li>Programming mode</li>
 </ul>
 <p>First <strong>cool feature</strong>: there is no need to press programming button.</p>
 <p>To get/set programming mode following command is used:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>bobaos&gt; progmode ?
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; progmode ?
 BAOS module in programming mode: false
 bobaos&gt; progmode 1
 BAOS module in programming mode: true
@@ -262,167 +177,147 @@ bobaos&gt;
 <ul class="simple">
 <li>Get description for datapoints:</li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">description</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span>
-<span class="c1">#1: length = 2, dpt = dpt9,  prio: low  flags: [C-WTU]</span>
-<span class="c1">#2: length = 1, dpt = dpt5,  prio: low  flags: [C-WTU]</span>
-<span class="c1">#3: length = 1, dpt = dpt5,  prio: low  flags: [C-WTU]</span>
-<span class="n">bobaos</span><span class="o">&gt;</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; description 1 2 3
+#1: length = 2, dpt = dpt9,  prio: low  flags: [C-WTU]
+#2: length = 1, dpt = dpt5,  prio: low  flags: [C-WTU]
+#3: length = 1, dpt = dpt5,  prio: low  flags: [C-WTU]
+bobaos&gt;
 </pre></div>
 </div>
 <p>To list all datapoints, run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">description</span> <span class="o">*</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; description *
 </pre></div>
 </div>
 <ul class="simple">
 <li>Set value:</li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bobaos</span><span class="o">&gt;</span> <span class="nb">set</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mi">06</span><span class="p">:</span><span class="mi">239</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">bobaos</span><span class="o">&gt;</span> <span class="nb">set</span> <span class="p">[</span><span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">999</span><span class="p">:</span> <span class="s2">&quot;hello, friend&quot;</span><span class="p">]</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">28</span><span class="p">:</span><span class="mi">48</span><span class="p">:</span><span class="mi">586</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">28</span><span class="p">:</span><span class="mi">48</span><span class="p">:</span><span class="mi">592</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">128</span><span class="p">]</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">28</span><span class="p">:</span><span class="mi">48</span><span class="p">:</span><span class="mi">593</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">999</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="s2">&quot;hello, friend, raw: [34,104,101,108,108,111,44,32,102,114,105,101,110,100]</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; set 2: 0
+20:27:06:239,    id: 2, value: 0, raw: [0]
+bobaos&gt; set [2: 0, 3: 128, 999: &quot;hello, friend&quot;]
+20:28:48:586,    id: 2, value: 0, raw: [0]
+20:28:48:592,    id: 3, value: 128, raw: [128]
+20:28:48:593,    id: 999, value: &quot;hello, friend, raw: [34,104,101,108,108,111,44,32,102,114,105,101,110,100]
 </pre></div>
 </div>
 <p>I would advice to use <strong>multiple value sending</strong> as a cool feature of BAOS protocol.</p>
 <ul class="simple">
 <li>Get values:</li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">get</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">101</span> <span class="mi">102</span> <span class="mi">103</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">250</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">23</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span><span class="mi">126</span><span class="p">]</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">260</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">268</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">128</span><span class="p">]</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">277</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">286</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">295</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">101</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">304</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">102</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mi">02</span><span class="p">:</span><span class="mi">312</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">103</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; get 1 2 3 4 5 101 102 103
+20:38:02:250,    id: 1, value: 23, raw: [12,126]
+20:38:02:260,    id: 2, value: 0, raw: [0]
+20:38:02:268,    id: 3, value: 128, raw: [128]
+20:38:02:277,    id: 4, value: 0, raw: [0]
+20:38:02:286,    id: 5, value: 0, raw: [0]
+20:38:02:295,    id: 101, value: false, raw: [0]
+20:38:02:304,    id: 102, value: false, raw: [0]
+20:38:02:312,    id: 103, value: false, raw: [0]
 </pre></div>
 </div>
 <p>It is possible to get value stored in RPi’s RAM:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">stored</span>  <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">54</span><span class="p">:</span><span class="mi">963</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mf">22.9</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span><span class="mi">121</span><span class="p">]</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">54</span><span class="p">:</span><span class="mi">974</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">39</span><span class="p">:</span><span class="mi">54</span><span class="p">:</span><span class="mi">982</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">128</span><span class="p">]</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; stored  1 2 3
+20:39:54:963,    id: 1, value: 22.9, raw: [12,121]
+20:39:54:974,    id: 2, value: 0, raw: [0]
+20:39:54:982,    id: 3, value: 128, raw: [128]
 </pre></div>
 </div>
 <p>This feature can help to get datapoint values and don’t send a lot of requests over UART.</p>
 <ul class="simple">
 <li>Read values:</li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">read</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">105</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">540</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mf">22.9</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span><span class="mi">121</span><span class="p">]</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">42</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">642</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">105</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">bobaos</span><span class="o">&gt;</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; read 1 2 3 105
+20:42:12:540,    id: 1, value: 22.9, raw: [12,121]
+20:42:12:642,    id: 105, value: false, raw: [0]
+bobaos&gt;
 </pre></div>
 </div>
 <p>In this example only two datapoint indications came from bus. That happened because there is no KNX objects configured with flag <strong>Read</strong> for datapoints 2 and 3(these are control). Datapoint 1 is a temperature sensor and datapoint 105 is binary output feedback.</p>
 <p>If group objects configured right, but there is no read response, check update flag in BAOS ETS config.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">description</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">105</span>
-<span class="c1">#1: length = 2, dpt = dpt9,  prio: low  flags: [C-WTU]</span>
-<span class="c1">#2: length = 1, dpt = dpt5,  prio: low  flags: [C-WTU]</span>
-<span class="c1">#3: length = 1, dpt = dpt5,  prio: low  flags: [C-WTU]</span>
-<span class="c1">#105: length = 1, dpt = dpt1,  prio: low  flags: [C-WTU]</span>
-<span class="n">bobaos</span><span class="o">&gt;</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; description 1 2 3 105
+#1: length = 2, dpt = dpt9,  prio: low  flags: [C-WTU]
+#2: length = 1, dpt = dpt5,  prio: low  flags: [C-WTU]
+#3: length = 1, dpt = dpt5,  prio: low  flags: [C-WTU]
+#105: length = 1, dpt = dpt1,  prio: low  flags: [C-WTU]
+bobaos&gt;
 </pre></div>
 </div>
 <p>In this example, <strong>U</strong> flag assigned for all of these objects.</p>
 <ul class="simple">
 <li>Monitoring datapoint values with colors:</li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">watch</span> <span class="mi">1</span><span class="p">:</span> <span class="n">green</span>
-<span class="n">datapoint</span> <span class="mi">1</span> <span class="n">value</span> <span class="ow">is</span> <span class="n">now</span> <span class="ow">in</span> <span class="n">green</span>
-<span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">watch</span> <span class="p">[</span><span class="mi">1</span><span class="p">:</span> <span class="n">green</span><span class="p">,</span> <span class="mi">105</span><span class="p">:</span> <span class="n">underline</span><span class="p">]</span>
-<span class="n">datapoint</span> <span class="mi">1</span> <span class="n">value</span> <span class="ow">is</span> <span class="n">now</span> <span class="ow">in</span> <span class="n">green</span>
-<span class="n">datapoint</span> <span class="mi">105</span> <span class="n">value</span> <span class="ow">is</span> <span class="n">now</span> <span class="ow">in</span> <span class="n">underline</span>
-<span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">read</span> <span class="mi">1</span> <span class="mi">105</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">50</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">077</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mf">22.9</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span><span class="mi">121</span><span class="p">]</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">50</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mi">123</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">105</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">unwatch</span> <span class="mi">1</span> <span class="mi">105</span>
-<span class="n">datapoint</span> <span class="mi">1</span> <span class="n">value</span> <span class="ow">is</span> <span class="n">now</span> <span class="ow">in</span> <span class="n">default</span> <span class="n">color</span>
-<span class="n">datapoint</span> <span class="mi">105</span> <span class="n">value</span> <span class="ow">is</span> <span class="n">now</span> <span class="ow">in</span> <span class="n">default</span> <span class="n">color</span>
-<span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">read</span> <span class="mi">1</span> <span class="mi">105</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">50</span><span class="p">:</span><span class="mi">41</span><span class="p">:</span><span class="mi">901</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">23</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span><span class="mi">126</span><span class="p">]</span>
-<span class="mi">20</span><span class="p">:</span><span class="mi">50</span><span class="p">:</span><span class="mi">41</span><span class="p">:</span><span class="mi">944</span><span class="p">,</span>    <span class="nb">id</span><span class="p">:</span> <span class="mi">105</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span> <span class="n">raw</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">bobaos</span><span class="o">&gt;</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; watch 1: green
+datapoint 1 value is now in green
+bobaos&gt; watch [1: green, 105: underline]
+datapoint 1 value is now in green
+datapoint 105 value is now in underline
+bobaos&gt; read 1 105
+20:50:18:077,    id: 1, value: 22.9, raw: [12,121]
+20:50:18:123,    id: 105, value: false, raw: [0]
+bobaos&gt; unwatch 1 105
+datapoint 1 value is now in default color
+datapoint 105 value is now in default color
+bobaos&gt; read 1 105
+20:50:41:901,    id: 1, value: 23, raw: [12,126]
+20:50:41:944,    id: 105, value: false, raw: [0]
+bobaos&gt;
 </pre></div>
 </div>
 <p>This feature is helpful when there is a need to catch by eyes certain datapoints from common output.</p>
 <ul class="simple">
 <li>Other BAOS services: server items, parameter bytes</li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">getitem</span> <span class="o">*</span>
-<span class="p">[</span> <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;HardwareType&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="p">[</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">197</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span> <span class="p">]</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;HardwareVersion&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="p">[</span> <span class="mi">16</span> <span class="p">]</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;FirmwareVersion&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="p">[</span> <span class="mi">18</span> <span class="p">]</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;KnxManufacturerCodeDev&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="p">[</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">197</span> <span class="p">]</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;KnxManufacturerCodeApp&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="p">[</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">197</span> <span class="p">]</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;EtsAppId&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="p">[</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">5</span> <span class="p">]</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;EtsAppId&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="p">[</span> <span class="mi">16</span> <span class="p">]</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
-    <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;SerialNumber&#39;</span><span class="p">,</span>
-    <span class="n">value</span><span class="p">:</span> <span class="p">[</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">197</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">112</span><span class="p">,</span> <span class="mi">182</span> <span class="p">]</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;TimeSinceReset&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">417399370</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;BusConnectionState&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">true</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;MaximumBufferSize&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">250</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;DescStringLen&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">0</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">13</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;BaudRate&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">19200</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;CurrentBufferSize&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">250</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;ProgrammingMode&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">false</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;ProtocolVersion&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="mi">32</span> <span class="p">},</span>
-  <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">17</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;IndicationSending&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">true</span> <span class="p">}</span> <span class="p">]</span>
-<span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">getitem</span> <span class="n">BusConnectionState</span>
-<span class="p">[</span> <span class="p">{</span> <span class="nb">id</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s1">&#39;BusConnectionState&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">true</span> <span class="p">}</span> <span class="p">]</span>
-<span class="n">bobaos</span><span class="o">&gt;</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; getitem *
+[ { id: &#39;1&#39;, value: [ 0, 0, 197, 8, 0, 3 ], raw: &#39;AADFCAAD&#39; },
+  { id: &#39;2&#39;, value: [ 16 ], raw: &#39;EA==&#39; },
+  { id: &#39;3&#39;, value: [ 18 ], raw: &#39;Eg==&#39; },
+  { id: &#39;4&#39;, value: [ 0, 197 ], raw: &#39;AMU=&#39; },
+  { id: &#39;5&#39;, value: [ 0, 197 ], raw: &#39;AMU=&#39; },
+  { id: &#39;6&#39;, value: [ 8, 5 ], raw: &#39;CAU=&#39; },
+  { id: &#39;7&#39;, value: [ 16 ], raw: &#39;EA==&#39; },
+  { id: &#39;8&#39;, value: [ 0, 197, 1, 1, 118, 183 ], raw: &#39;AMUBAXa3&#39; },
+  { id: &#39;9&#39;, value: [ 42, 39, 107, 116 ], raw: &#39;KidrdA==&#39; },
+  { id: &#39;10&#39;, value: [ 1 ], raw: &#39;AQ==&#39; },
+  { id: &#39;11&#39;, value: [ 0, 250 ], raw: &#39;APo=&#39; },
+  { id: &#39;12&#39;, value: [ 0, 0 ], raw: &#39;AAA=&#39; },
+  { id: &#39;13&#39;, value: [ 1 ], raw: &#39;AQ==&#39; },
+  { id: &#39;14&#39;, value: [ 0, 250 ], raw: &#39;APo=&#39; },
+  { id: &#39;15&#39;, value: [ 0 ], raw: &#39;AA==&#39; },
+  { id: &#39;16&#39;, value: [ 32 ], raw: &#39;IA==&#39; },
+  { id: &#39;17&#39;, value: [ 1 ], raw: &#39;AQ==&#39; } ]
+bobaos&gt;
 </pre></div>
 </div>
-<p>Keep in mind, that server items only can be get by name parameter or asterisk for all items.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">getbyte</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span>
-<span class="p">[</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span> <span class="p">]</span>
-<span class="n">bobaos</span><span class="o">&gt;</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; getbyte 1 2 3
+[ 1, 3, 5 ]
+bobaos&gt;
 </pre></div>
 </div>
 <p>To get parameter byte values.</p>
 <ul class="simple">
 <li>General commands: <strong>ping, state, reset</strong></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">ping</span>
-<span class="n">ping</span><span class="p">:</span> <span class="n">true</span>
-<span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">state</span>
-<span class="n">get</span> <span class="n">sdk</span> <span class="n">state</span><span class="p">:</span> <span class="n">ready</span>
-<span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">reset</span>
-<span class="n">reset</span> <span class="n">request</span> <span class="n">sent</span>
-<span class="n">bobaos</span><span class="o">&gt;</span> <span class="n">state</span>
-<span class="n">get</span> <span class="n">sdk</span> <span class="n">state</span><span class="p">:</span> <span class="n">ready</span>
-<span class="n">bobaos</span><span class="o">&gt;</span>
-</pre></div>
-</div>
-<p>After reset request, bobaos.pub logs into bobaos_logs channel following info:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bobaos</span><span class="o">.</span><span class="n">pub</span><span class="p">::</span> <span class="n">debug</span><span class="p">::</span> <span class="mi">21</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">30</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;Incoming request: &quot;</span><span class="p">]</span>
-<span class="n">bobaos</span><span class="o">.</span><span class="n">pub</span><span class="p">::</span> <span class="n">debug</span><span class="p">::</span> <span class="mi">21</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">30</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;method: reset&quot;</span><span class="p">]</span>
-<span class="n">bobaos</span><span class="o">.</span><span class="n">pub</span><span class="p">::</span> <span class="n">debug</span><span class="p">::</span> <span class="mi">21</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">30</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;payload: null&quot;</span><span class="p">]</span>
-<span class="n">bobaos</span><span class="o">.</span><span class="n">pub</span><span class="p">::</span> <span class="n">debug</span><span class="p">::</span> <span class="mi">21</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">30</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;response_channel: bobaos_res_16566&quot;</span><span class="p">]</span>
-<span class="n">bobaos</span><span class="o">.</span><span class="n">pub</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">21</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">30</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;SDK has stopped&quot;</span><span class="p">]</span>
-<span class="n">bobaos_sdk</span><span class="p">::</span> <span class="n">debug</span><span class="p">::</span> <span class="mi">21</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">30</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;Resetting SDK.&quot;</span><span class="p">]</span>
-<span class="n">bobaos_sdk</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">21</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">30</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;Loading server items&quot;</span><span class="p">]</span>
-<span class="n">bobaos_sdk</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">21</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">30</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;Server items loaded&quot;</span><span class="p">]</span>
-<span class="n">bobaos_sdk</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">21</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">30</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;Loading datapoints. Setting indication to false&quot;</span><span class="p">]</span>
-<span class="n">bobaos_sdk</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">21</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">31</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;All datapoints [79] loaded. Return indications to true&quot;</span><span class="p">]</span>
-<span class="n">bobaos_sdk</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">21</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">32</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;Bobaos SDK ready. Emitting event&quot;</span><span class="p">]</span>
-<span class="n">bobaos</span><span class="o">.</span><span class="n">pub</span><span class="p">::</span> <span class="n">info</span><span class="p">::</span> <span class="mi">21</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">32</span><span class="p">::</span> <span class="p">[</span><span class="s2">&quot;Connected to BAOS. SDK ready.&quot;</span><span class="p">]</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; ping
+ping: true
+bobaos&gt; state
+get sdk state: ready
+bobaos&gt; reset
+reset request sent
+bobaos&gt; state
+get sdk state: ready
+bobaos&gt;
 </pre></div>
 </div>
 </div>
 <div class="section" id="bobaos-sub">
 <span id="bobaos-sub"></span><h2>bobaos.sub<a class="headerlink" href="#bobaos-sub" title="Permalink to this headline">¶</a></h2>
 <p>This library control BAOS datapoints from nodejs app.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">npm</span> <span class="n">i</span> <span class="o">--</span><span class="n">save</span> <span class="n">bobaos</span><span class="o">.</span><span class="n">sub</span>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>npm i --save bobaos.sub
 </pre></div>
 </div>
 <p>Then in script:</p>
 <div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">BobaosSub</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;bobaos.sub&#39;</span><span class="p">);</span>
  
-<span class="kd">let</span> <span class="nx">my</span> <span class="o">=</span> <span class="nx">BobaosSub</span><span class="p">({</span><span class="nx">socketFile</span><span class="o">:</span> <span class="s2">&quot;/var/run/myps/myipc.sock&quot;</span><span class="p">});</span>
+<span class="kd">let</span> <span class="nx">my</span> <span class="o">=</span> <span class="nx">BobaosSub</span><span class="p">();</span>
  
 <span class="nx">my</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;connect&quot;</span><span class="p">,</span> <span class="nx">_</span> <span class="p">=&gt;</span> <span class="p">{</span>
   <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;connected to ipc, still not subscribed to channels&quot;</span><span class="p">);</span>
@@ -460,8 +355,160 @@ bobaos&gt;
 <span class="p">});</span>
 </pre></div>
 </div>
-<p>There will be more info on API, but for now this is the end. The very end, my friend.</p>
+</div>
+<div class="section" id="bobaos-ws">
+<span id="bobaos-ws"></span><h2>bobaos.ws<a class="headerlink" href="#bobaos-ws" title="Permalink to this headline">¶</a></h2>
+<p>This package is used to add WebSocket support</p>
+<div class="section" id="installation">
+<span id="installation"></span><h3>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>sudo npm i -g bobaos.ws
+</pre></div>
+</div>
+<p>You can run it:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>pi@pi:~$ bobaos-ws
+Starting bobaos.ws
+bobaos sdk: ready
+</pre></div>
+</div>
+<p>Try to send from any websocket client following request on port 49190</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">&quot;request_id&quot;</span><span class="p">:</span> <span class="mi">42</span><span class="p">,</span> <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;ping&quot;</span><span class="p">,</span> <span class="nt">&quot;payload&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>If everything is ok, create service file `/etc/systemd/system/bobaos_ws.service:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[Unit]
+Description=WebSocket server for bobaos.pub
+After=bobaos_pub.service
+
+[Service]
+User=pi
+ExecStart=/usr/bin/env bobaos-ws
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+</pre></div>
+</div>
+<p>Reload systemd, start and enable daemon:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>sudo systemctl daemon-reload
+sudo systemctl start bobaos_ws.service
+sudo systemctl enable bobaos_ws.service
+</pre></div>
+</div>
+<p>After that, to configure <code class="docutils literal notranslate"><span class="pre">bobaos.ws</span></code> edit <code class="docutils literal notranslate"><span class="pre">/usr/lib/node_modules/bobaos.ws/config.json</span></code> file.</p>
+</div>
+<div class="section" id="protocol">
+<span id="protocol"></span><h3>Protocol<a class="headerlink" href="#protocol" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="overview">
+<span id="overview"></span><h4>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h4>
+<p>Published messages to websocket are serialized JSON objects, containing required fields <code class="docutils literal notranslate"><span class="pre">request_id,</span> <span class="pre">method,</span> <span class="pre">payload</span></code>.
+For broadcasted messages <code class="docutils literal notranslate"><span class="pre">request_id</span></code> field is not used.</p>
+<p>For outgoing requests:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">request_id</span></code> is used to receive response exactly to this request. If it is not defined then you will not receive response from server.</li>
+<li><code class="docutils literal notranslate"><span class="pre">method</span></code> is an API method.</li>
+<li><code class="docutils literal notranslate"><span class="pre">payload</span></code> depends on method. It may be datapoint id, array of ids, value, or null.</li>
+</ul>
+<p>Request:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="nt">&quot;request_id&quot;</span><span class="p">:</span> <span class="mi">420</span><span class="p">,</span>
+  <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;get parameter byte&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;payload&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="nt">&quot;response_id&quot;</span><span class="p">:</span><span class="mi">420</span><span class="p">,</span>
+  <span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="s2">&quot;success&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;payload&quot;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="api-methods">
+<span id="api-methods"></span><h4>API methods<a class="headerlink" href="#api-methods" title="Permalink to this headline">¶</a></h4>
+<ul>
+<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">ping</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">null</span></code>.</p>
+<p>Returns <code class="docutils literal notranslate"><span class="pre">true/false</span></code> depending on running state of bobaos.pub service.</p>
+</li>
+<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">sdk</span> <span class="pre">state</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">null</span></code>.</p>
+<p>Check if connected to BAOS.</p>
+</li>
+<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">reset</span></code>.</p>
+<p>Restart SDK. Reload datapoints/server items.</p>
+</li>
+<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">description</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">null/id/[id1,</span> <span class="pre">..</span> <span class="pre">idN]</span></code>.</p>
+<p>Get description for datapoints with given ids. If payload is null then description for all datapoints will be returned.</p>
+</li>
+<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">value</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">id/[id1,</span> <span class="pre">..</span> <span class="pre">idN]</span></code>.</p>
+<p>Get value for datapoints with given ids.</p>
+</li>
+<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">stored</span> <span class="pre">value</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">id/[id1,</span> <span class="pre">..</span> <span class="pre">idN]</span></code>.</p>
+<p>Get value stored in bobaos.pub service. Do not send any data via UART.</p>
+</li>
+<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">set</span> <span class="pre">value</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">{id:</span> <span class="pre">i,</span> <span class="pre">value:</span> <span class="pre">v}/[{id:</span> <span class="pre">i1,</span> <span class="pre">value:</span> <span class="pre">v1},</span> <span class="pre">..</span> <span class="pre">{id:</span> <span class="pre">iN,</span> <span class="pre">value:</span> <span class="pre">vN}]</span></code></p>
+<p>Set datapoints value and send to bus. Keep in mind that after successful request, new datapoint value will be broadcasted to all websocket clients, including sender.</p>
+</li>
+<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">read</span> <span class="pre">value</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">id/[id1,</span> <span class="pre">..</span> <span class="pre">idN]</span></code>.</p>
+<p>Send read requests to KNX bus. Keep in mind that datapoint object should have active Update flag.
+If reading was successful then datapoint value will be broadcasted.</p>
+</li>
+<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">server</span> <span class="pre">item</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">null/id/[id1,</span> <span class="pre">..</span> <span class="pre">idN]</span></code>.</p>
+<p>Get server items with given id/ids. To get all server items use <code class="docutils literal notranslate"><span class="pre">null</span></code> as a payload.</p>
+</li>
+<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">set</span> <span class="pre">programming</span> <span class="pre">mode</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">1/0/true/false</span></code>.</p>
+<p>Send to BAOS request to go into programming mode.</p>
+</li>
+<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">programming</span> <span class="pre">mode</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">null</span></code>.</p>
+<p>Return current value of ProgrammingMode sever item.</p>
+</li>
+<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">parameter</span> <span class="pre">byte</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">id/[id1,</span> <span class="pre">..</span> <span class="pre">idN]</span></code>.</p>
+<p>Get parameter byte values for given ids.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="communication-example">
+<span id="communication-example"></span><h4>Communication example<a class="headerlink" href="#communication-example" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;ping&quot;, &quot;payload&quot;: null}
+{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:true}
+{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;get sdk state&quot;, &quot;payload&quot;: null}
+{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:&quot;ready&quot;}
+{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;reset&quot;, &quot;payload&quot;: null}
+{&quot;method&quot;:&quot;sdk state&quot;,&quot;payload&quot;:&quot;stop&quot;}
+{&quot;method&quot;:&quot;sdk state&quot;,&quot;payload&quot;:&quot;ready&quot;}
+{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:null}
+{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:1,&quot;value&quot;:23.6,&quot;raw&quot;:&quot;DJw=&quot;}}
+{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;get description&quot;, &quot;payload&quot;: 1}
+{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:{&quot;valid&quot;:&quot;true&quot;,&quot;id&quot;:&quot;1&quot;,&quot;length&quot;:&quot;2&quot;,&quot;dpt&quot;:&quot;dpt9&quot;,&quot;flag_priority&quot;:&quot;low&quot;,&quot;flag_communication&quot;:&quot;true&quot;,&quot;flag_read&quot;:&quot;false&quot;,&quot;flag_write&quot;:&quot;true&quot;,&quot;false&quot;:&quot;false&quot;,&quot;flag_readOnInit&quot;:&quot;false&quot;,&quot;flag_update&quot;:&quot;true&quot;,&quot;flag_transmit&quot;:&quot;true&quot;,&quot;value&quot;:&quot;23.6&quot;,&quot;raw&quot;:&quot;DJw=&quot;}}
+{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;get value&quot;, &quot;payload&quot;: 1}
+{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:{&quot;id&quot;:1,&quot;value&quot;:23.6,&quot;raw&quot;:&quot;DJw=&quot;}}
+{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:1,&quot;value&quot;:23.6,&quot;raw&quot;:&quot;DJw=&quot;}}
+{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;get stored value&quot;, &quot;payload&quot;: 1}
+{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:{&quot;id&quot;:1,&quot;value&quot;:23.6,&quot;raw&quot;:&quot;DJw=&quot;}}
+{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;set value&quot;, &quot;payload&quot;: {&quot;id&quot;: 103, &quot;value&quot;: false}}
+{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:[{&quot;id&quot;:103,&quot;value&quot;:false,&quot;raw&quot;:&quot;AA==&quot;}]}
+{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:[{&quot;id&quot;:103,&quot;value&quot;:false,&quot;raw&quot;:&quot;AA==&quot;}]}
+{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:107,&quot;value&quot;:false,&quot;raw&quot;:&quot;AA==&quot;}}
+{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:1,&quot;value&quot;:23.6,&quot;raw&quot;:&quot;DJw=&quot;}}
+{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;set value&quot;, &quot;payload&quot;: [{&quot;id&quot;: 102, &quot;value&quot;: true}, {&quot;id&quot;: 103, &quot;value&quot;: true}]}
+{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:[{&quot;id&quot;:102,&quot;value&quot;:true,&quot;raw&quot;:&quot;AQ==&quot;},{&quot;id&quot;:103,&quot;value&quot;:true,&quot;raw&quot;:&quot;AQ==&quot;}]}
+{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:[{&quot;id&quot;:102,&quot;value&quot;:true,&quot;raw&quot;:&quot;AQ==&quot;},{&quot;id&quot;:103,&quot;value&quot;:true,&quot;raw&quot;:&quot;AQ==&quot;}]}
+{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:107,&quot;value&quot;:true,&quot;raw&quot;:&quot;AQ==&quot;}}
+{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;read value&quot;, &quot;payload&quot;: [1, 105, 106]}
+{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:null}
+{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:1,&quot;value&quot;:22.7,&quot;raw&quot;:&quot;DG8=&quot;}}
+{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:105,&quot;value&quot;:false,&quot;raw&quot;:&quot;AA==&quot;}}
+{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:106,&quot;value&quot;:true,&quot;raw&quot;:&quot;AQ==&quot;}}
+{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;get server item&quot;, &quot;payload&quot;: [1, 2, 3]}
+{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:[{&quot;id&quot;:1,&quot;value&quot;:[0,0,197,8,0,3],&quot;raw&quot;:&quot;AADFCAAD&quot;},{&quot;id&quot;:2,&quot;value&quot;:[16],&quot;raw&quot;:&quot;EA==&quot;},{&quot;id&quot;:3,&quot;value&quot;:[18],&quot;raw&quot;:&quot;Eg==&quot;}]}
+{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:1,&quot;value&quot;:22.9,&quot;raw&quot;:&quot;DHk=&quot;}}
+{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:1,&quot;value&quot;:23.2,&quot;raw&quot;:&quot;DIg=&quot;}}
+</pre></div>
+</div>
 <p>Thank you for attention.</p>
+</div>
+</div>
 </div>
 </div>
 
@@ -487,11 +534,12 @@ bobaos&gt;
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Quick Start</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#hardware-configuration">hardware configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#myps-broker">myps.broker</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#myps-logviewer">myps.logviewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#node-js">Node.js</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#redis">Redis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#bobaos-pub">bobaos.pub</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#bobaos-tool">bobaos.tool</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#bobaos-sub">bobaos.sub</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bobaos-ws">bobaos.ws</a></li>
 </ul>
 </li>
 </ul>
