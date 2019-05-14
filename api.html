@@ -1,0 +1,278 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>bobaos.pub API &#8212; bobaos  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Quick Start" href="quickstart.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="bobaos-pub-api">
+<span id="bobaos-pub-api"></span><h1>bobaos.pub API<a class="headerlink" href="#bobaos-pub-api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="bee-queue">
+<span id="bee-queue"></span><h2>bee-queue<a class="headerlink" href="#bee-queue" title="Permalink to this headline">¶</a></h2>
+<p>To perform operation with KNX datapoints <a class="reference external" href="https://github.com/bee-queue/bee-queue">bee-queue</a> job may sent to <code class="docutils literal notranslate"><span class="pre">config.ipc.request_channel</span></code> with data object, consist following fields:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">method</span></code> is an API method.</li>
+<li><code class="docutils literal notranslate"><span class="pre">payload</span></code> depends on method. It may be datapoint id, array of ids, value, or null.</li>
+</ul>
+<p>Request:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;get parameter byte&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;payload&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Response is processes by <code class="docutils literal notranslate"><span class="pre">queue.on(&quot;job</span> <span class="pre">succeeded&quot;)</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;payload&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>In case of error, <code class="docutils literal notranslate"><span class="pre">method</span></code> field in response will contain “error” string and payload will describe error.</p>
+<p>For service requests channel <code class="docutils literal notranslate"><span class="pre">config.ipc.service_channel</span></code> is used.</p>
+<p>Bee-queue client is implemented in <a class="reference external" href="https://github.com/bobaoskit/bobaos.sub">bobaos.sub</a> js package.</p>
+</div>
+<div class="section" id="redis-pub-sub-channels">
+<span id="redis-pub-sub-channels"></span><h2>redis pub/sub channels<a class="headerlink" href="#redis-pub-sub-channels" title="Permalink to this headline">¶</a></h2>
+<p>Since version 2.0.8 this feature is supported to simplify job adding.</p>
+<p>bobaos.pub listens request and service channels and on incoming request it add job to corresponding queue. So, request can be done just by publishing json message to redis channel.</p>
+<p>Only difference from bee-queue request is that request should contain <code class="docutils literal notranslate"><span class="pre">response_channel</span></code> field, so bobaos.pub will know where to send response. This channels may be randomly generated, then subscribed, and after request was sent and response came, client may unsubscribe from this channel.</p>
+</div>
+<div class="section" id="service-methods">
+<span id="service-methods"></span><h2>service methods<a class="headerlink" href="#service-methods" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="ping">
+<span id="ping"></span><h3>ping<a class="headerlink" href="#ping" title="Permalink to this headline">¶</a></h3>
+<p><strong>payload</strong>: null</p>
+<p>If bobaos.pub service is running, true will be returned as a response payload.</p>
+</div>
+<div class="section" id="get-sdk-state">
+<span id="get-sdk-state"></span><h3>get sdk state<a class="headerlink" href="#get-sdk-state" title="Permalink to this headline">¶</a></h3>
+<p><strong>payload</strong>: null</p>
+<p>Response payload: “ready”/”stopped”.</p>
+</div>
+<div class="section" id="reset">
+<span id="reset"></span><h3>reset<a class="headerlink" href="#reset" title="Permalink to this headline">¶</a></h3>
+<p><strong>payload</strong>: null</p>
+</div>
+<div class="section" id="get-version">
+<span id="get-version"></span><h3>get version<a class="headerlink" href="#get-version" title="Permalink to this headline">¶</a></h3>
+<p><strong>payload</strong>: null</p>
+<p>Get version of bobaos.pub npm package.</p>
+</div>
+</div>
+<div class="section" id="baos-methods">
+<span id="baos-methods"></span><h2>baos methods<a class="headerlink" href="#baos-methods" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="get-description">
+<span id="get-description"></span><h3>get description<a class="headerlink" href="#get-description" title="Permalink to this headline">¶</a></h3>
+<p><strong>payload</strong>: null/number/array of numbers</p>
+<p>Returns descriptions for given object ids. If payload is null, return description for all configured datapoints.</p>
+<p>Response payload example:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{
+  &quot;valid&quot;: &quot;true&quot;,
+  &quot;id&quot;: &quot;1&quot;,
+  &quot;length&quot;: &quot;2&quot;,
+  &quot;dpt&quot;: &quot;dpt9&quot;,
+  &quot;flag_priority&quot;: &quot;low&quot;,
+  &quot;flag_communication&quot;: &quot;true&quot;,
+  &quot;flag_read&quot;: &quot;false&quot;,
+  &quot;flag_write&quot;: &quot;true&quot;,
+  &quot;false&quot;: &quot;false&quot;,
+  &quot;flag_readOnInit&quot;: &quot;false&quot;,
+  &quot;flag_update&quot;: &quot;true&quot;,
+  &quot;flag_transmit&quot;: &quot;true&quot;,
+  &quot;value&quot;: &quot;23.6&quot;,
+  &quot;raw&quot;: &quot;DJw=&quot;
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-value">
+<span id="get-value"></span><h3>get value<a class="headerlink" href="#get-value" title="Permalink to this headline">¶</a></h3>
+<p><strong>payload</strong>: number/array of numbers</p>
+<p>Returns values for given object ids. Sends data to BAOS via UART. When received, value is saved in redis, so can be got also by <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">stored</span> <span class="pre">value</span></code> method. It is recommended to get values for multiple datapoints at once to reduce UART message count.</p>
+<p>Response payload example:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{
+  &quot;id&quot;:1,
+  &quot;value&quot;:23.6,
+  &quot;raw&quot;:&quot;DJw=&quot;
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="get-stored-value">
+<span id="get-stored-value"></span><h3>get stored value<a class="headerlink" href="#get-stored-value" title="Permalink to this headline">¶</a></h3>
+<p>Returns value as <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">value</span></code> method, but without data sending by UART. Values is taken from redis database.</p>
+</div>
+<div class="section" id="poll-values">
+<span id="poll-values"></span><h3>poll values<a class="headerlink" href="#poll-values" title="Permalink to this headline">¶</a></h3>
+<p><strong>payload</strong>: null</p>
+<p>Returns values for all configured datapoints.  May take a while to accomplish. Response payload is the same as for <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">values</span></code>/<code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">stored</span> <span class="pre">values</span></code>.</p>
+</div>
+<div class="section" id="set-value">
+<span id="set-value"></span><h3>set value<a class="headerlink" href="#set-value" title="Permalink to this headline">¶</a></h3>
+<p><strong>payload</strong>: Object/Array of objects</p>
+<p>Request payload object should be one of following: <code class="docutils literal notranslate"><span class="pre">{</span> <span class="pre">id:</span> <span class="pre">&lt;Number&gt;,</span> <span class="pre">value:</span> <span class="pre">&lt;Value&gt;</span> <span class="pre">}</span></code>, <code class="docutils literal notranslate"><span class="pre">{</span> <span class="pre">id:</span> <span class="pre">&lt;Number&gt;,</span> <span class="pre">raw:</span> <span class="pre">&lt;String&gt;</span> <span class="pre">}</span></code>, where raw is base64 encoded buffer.</p>
+<p>If payload is array of objects, it is possible to combine value types, so following payload is valid:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[
+  {id: 2, value: true}
+  {id: 3, raw: &quot;AA==&quot;}
+]
+</pre></div>
+</div>
+<p>After values are sent to bus, bobaos.pub broadcasts them via pubsub channel <code class="docutils literal notranslate"><span class="pre">bobaos_bcast</span></code>.</p>
+</div>
+<div class="section" id="read-value">
+<span id="read-value"></span><h3>read value<a class="headerlink" href="#read-value" title="Permalink to this headline">¶</a></h3>
+<p><strong>payload</strong>: number/array of numbers</p>
+</div>
+<div class="section" id="get-server-item">
+<span id="get-server-item"></span><h3>get server item<a class="headerlink" href="#get-server-item" title="Permalink to this headline">¶</a></h3>
+<p><strong>payload</strong>: null/number/array of numbers</p>
+<p>If payload is null, all server items to be returned in response.</p>
+<p>Response payload example:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[
+  {
+    &quot;id&quot;: 1,
+    &quot;value&quot;: [ 0, 0, 197, 8, 0, 3],
+    &quot;raw&quot;: &quot;AADFCAAD&quot;
+  },
+  {
+    &quot;id&quot;: 2,
+    &quot;value&quot;: [ 16 ],
+    &quot;raw&quot;: &quot;EA==&quot;
+  },
+  {
+    &quot;id&quot;: 3,
+    &quot;value&quot;: [ 18 ],
+    &quot;raw&quot;: &quot;Eg==&quot;
+  }
+]
+</pre></div>
+</div>
+</div>
+<div class="section" id="set-programming-mode">
+<span id="set-programming-mode"></span><h3>set programming mode<a class="headerlink" href="#set-programming-mode" title="Permalink to this headline">¶</a></h3>
+<p><strong>payload</strong>: 1/0/true/false</p>
+</div>
+<div class="section" id="get-programming-mode">
+<span id="get-programming-mode"></span><h3>get programming mode<a class="headerlink" href="#get-programming-mode" title="Permalink to this headline">¶</a></h3>
+<p><strong>payload</strong>: null</p>
+<p>Response payload: true/false</p>
+</div>
+<div class="section" id="get-parameter-byte">
+<span id="get-parameter-byte"></span><h3>get parameter byte<a class="headerlink" href="#get-parameter-byte" title="Permalink to this headline">¶</a></h3>
+<p><strong>payload</strong>: number/array of numbers</p>
+<p>Response payload example:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[ 0, 1, 2, 5, 7, 3]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="broadcasted-events">
+<span id="broadcasted-events"></span><h2>broadcasted events<a class="headerlink" href="#broadcasted-events" title="Permalink to this headline">¶</a></h2>
+<p>On incoming datapoint values or on service events(bus connected/disconnected/baos in programming mode) bobaos.pub sends json message to redis channel configured in <code class="docutils literal notranslate"><span class="pre">config.ipc.broadcast_channel</span></code>.</p>
+<p>Message consists <code class="docutils literal notranslate"><span class="pre">method</span></code> and <code class="docutils literal notranslate"><span class="pre">payload</span></code> fields.</p>
+<p>Method may be <code class="docutils literal notranslate"><span class="pre">&quot;datapoint</span> <span class="pre">value&quot;/&quot;server</span> <span class="pre">item&quot;/&quot;sdk</span> <span class="pre">state&quot;</span></code>.</p>
+<p>Payload for <code class="docutils literal notranslate"><span class="pre">&quot;datapoint</span> <span class="pre">value&quot;/&quot;server</span> <span class="pre">item&quot;</span></code> is a value object for datapoint/server item or array of such values. So, type checking is required. Payload for <code class="docutils literal notranslate"><span class="pre">&quot;sdk</span> <span class="pre">state&quot;</span></code> is one of following: <code class="docutils literal notranslate"><span class="pre">&quot;ready&quot;/&quot;stop&quot;</span></code>.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">bobaos</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">bobaos.pub API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#bee-queue">bee-queue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#redis-pub-sub-channels">redis pub/sub channels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#service-methods">service methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#baos-methods">baos methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#broadcasted-events">broadcasted events</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="quickstart.html" title="previous chapter">Quick Start</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Vladimir Shabunin.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="_sources/api.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
