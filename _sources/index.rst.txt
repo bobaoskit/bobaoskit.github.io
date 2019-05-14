@@ -12,6 +12,7 @@ Welcome to bobaos's documentation!
 
    intro
    quickstart
+   api
 
 Indices and tables
 ==================

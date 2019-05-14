@@ -15,6 +15,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="bobaos.pub API" href="api.html" />
     <link rel="prev" title="Introduction" href="intro.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -88,7 +89,21 @@ sudo systemctl start redis.service
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>sudo npm i -g bobaos.pub --unsafe-perm
 </pre></div>
 </div>
-<p>After that, edit config file located at <strong>/usr/lib/node_modules/bobaos.pub/config.json</strong> and replace default <strong>/dev/ttyS1</strong> to <strong>/dev/ttyAMA0</strong>.</p>
+<p>Start bobaos.pub</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>~ &gt; bobaos-pub
+
+  ()--()     hello, friend
+    \&quot;/_     here comes bobaos
+     &#39;  )    learn and enjoy
+       ~
+
+User config file does not exist
+Default congig file created at
+/home/pi/.config/bobaos/pub.json
+...
+</pre></div>
+</div>
+<p>Default serialport to be opened is <code class="docutils literal notranslate"><span class="pre">/dev/ttyS1</span></code>. If you need other serialport, then close application(<code class="docutils literal notranslate"><span class="pre">Ctrl-C</span></code>) and replace default value in config file located at <code class="docutils literal notranslate"><span class="pre">~/.config/bobaos/pub.json</span></code>.</p>
 <p>Create service file for systemd:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>sudo nano /etc/systemd/system/bobaos_pub.service
 </pre></div>
@@ -191,34 +206,32 @@ bobaos&gt;
 <ul class="simple">
 <li>Set value:</li>
 </ul>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; set 2: 0
-20:27:06:239,    id: 2, value: 0, raw: [0]
-bobaos&gt; set [2: 0, 3: 128, 999: &quot;hello, friend&quot;]
-20:28:48:586,    id: 2, value: 0, raw: [0]
-20:28:48:592,    id: 3, value: 128, raw: [128]
-20:28:48:593,    id: 999, value: &quot;hello, friend, raw: [34,104,101,108,108,111,44,32,102,114,105,101,110,100]
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; set 2: 1
+20:27:06:239,    id: 2, value: true, raw: [AQ==]
+bobaos&gt; set [2: 0, 26: &quot;hello, friend&quot;]
+23:41:05:171,    id: 2, value: false, raw: [AA==]
+23:41:05:171,    id: 26, value: hello, friend, raw: [aGVsbG8sIGZyaWVuZAA=]
 </pre></div>
 </div>
 <p>I would advice to use <strong>multiple value sending</strong> as a cool feature of BAOS protocol.</p>
 <ul class="simple">
 <li>Get values:</li>
 </ul>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; get 1 2 3 4 5 101 102 103
-20:38:02:250,    id: 1, value: 23, raw: [12,126]
-20:38:02:260,    id: 2, value: 0, raw: [0]
-20:38:02:268,    id: 3, value: 128, raw: [128]
-20:38:02:277,    id: 4, value: 0, raw: [0]
-20:38:02:286,    id: 5, value: 0, raw: [0]
-20:38:02:295,    id: 101, value: false, raw: [0]
-20:38:02:304,    id: 102, value: false, raw: [0]
-20:38:02:312,    id: 103, value: false, raw: [0]
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; get 1 2 3 11 26
+23:42:26:212,    id: 1, value: 21.7, raw: [DD0=]
+23:42:26:213,    id: 2, value: false, raw: [AA==]
+23:42:26:213,    id: 3, value: false, raw: [AA==]
+23:42:26:213,    id: 11, value: 0, raw: [AA==]
+23:42:26:214,    id: 26, value: hello, friend, raw: [aGVsbG8sIGZyaWVuZAA=]
 </pre></div>
 </div>
-<p>It is possible to get value stored in RPi’s RAM:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; stored  1 2 3
-20:39:54:963,    id: 1, value: 22.9, raw: [12,121]
-20:39:54:974,    id: 2, value: 0, raw: [0]
-20:39:54:982,    id: 3, value: 128, raw: [128]
+<p>It is possible to get value stored in RAM:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; stored 1 2 3 11 26
+23:42:53:630,    id: 1, value: 21.7, raw: [DD0=]
+23:42:53:631,    id: 2, value: false, raw: [AA==]
+23:42:53:631,    id: 3, value: false, raw: [AA==]
+23:42:53:632,    id: 11, value: 0, raw: [AA==]
+23:42:53:632,    id: 26, value: hello, friend, raw: [aGVsbG8sIGZyaWVuZAA=]
 </pre></div>
 </div>
 <p>This feature can help to get datapoint values and don’t send a lot of requests over UART.</p>
@@ -247,22 +260,20 @@ bobaos&gt;
 </ul>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>bobaos&gt; watch 1: green
 datapoint 1 value is now in green
-bobaos&gt; watch [1: green, 105: underline]
-datapoint 1 value is now in green
-datapoint 105 value is now in underline
-bobaos&gt; read 1 105
-20:50:18:077,    id: 1, value: 22.9, raw: [12,121]
-20:50:18:123,    id: 105, value: false, raw: [0]
-bobaos&gt; unwatch 1 105
+bobaos&gt; watch [1: hide, 2: cyan, 3: bgRed]
+datapoint 1 value is now in hide
+datapoint 2 value is now in cyan
+datapoint 3 value is now in bgRed
+bobaos&gt; unwatch 1 2 3
 datapoint 1 value is now in default color
-datapoint 105 value is now in default color
-bobaos&gt; read 1 105
-20:50:41:901,    id: 1, value: 23, raw: [12,126]
-20:50:41:944,    id: 105, value: false, raw: [0]
-bobaos&gt;
+datapoint 2 value is now in default color
+datapoint 3 value is now in default color
 </pre></div>
 </div>
 <p>This feature is helpful when there is a need to catch by eyes certain datapoints from common output.</p>
+<p>Coloring is done by <a class="reference external" href="https://github.com/Marak/colors.js">colors</a> package. So list of supported colors can be found on it’s github/npm page.</p>
+<p>To hide datapoint use <code class="docutils literal notranslate"><span class="pre">watch</span> <span class="pre">1:</span> <span class="pre">hide</span></code>/<code class="docutils literal notranslate"><span class="pre">watch</span> <span class="pre">1:</span> <span class="pre">hidden</span></code> commands. To show again, apply watch command with color value differs from <code class="docutils literal notranslate"><span class="pre">hide/hidden</span></code> or use <code class="docutils literal notranslate"><span class="pre">unwatch</span></code>.</p>
+<p>Please keep in mind that  bobaos.tool creates config file <code class="docutils literal notranslate"><span class="pre">~/.config/bobaos/tool.json</span></code> and stores color settings there.</p>
 <ul class="simple">
 <li>Other BAOS services: server items, parameter bytes</li>
 </ul>
@@ -355,6 +366,28 @@ bobaos&gt;
 <span class="p">});</span>
 </pre></div>
 </div>
+<p>For detailed documentation look <strong>API</strong> page.</p>
+<p>Following js script may be used as a simple template to start with:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="kr">const</span> <span class="nx">Bobaos</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">&quot;bobaos.sub&quot;</span><span class="p">);</span>
+
+<span class="kr">const</span> <span class="nx">bobaos</span> <span class="o">=</span> <span class="nx">Bobaos</span><span class="p">();</span>
+
+<span class="nx">bobaos</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;ready&quot;</span><span class="p">,</span> <span class="nx">_</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;bobaos ready&quot;</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="kr">const</span> <span class="nx">processBaosValue</span> <span class="o">=</span> <span class="nx">payload</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">isArray</span><span class="p">(</span><span class="nx">payload</span><span class="p">))</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">payload</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">processBaosValue</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="kd">let</span> <span class="p">{</span> <span class="nx">id</span><span class="p">,</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">raw</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">payload</span><span class="p">;</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`hello, </span><span class="si">${</span><span class="nx">id</span><span class="si">}</span><span class="sb">, </span><span class="si">${</span><span class="nx">value</span><span class="si">}</span><span class="sb">, raw`</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="nx">bobaos</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&quot;datapoint value&quot;</span><span class="p">,</span> <span class="nx">processBaosValue</span><span class="p">);</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="bobaos-ws">
 <span id="bobaos-ws"></span><h2>bobaos.ws<a class="headerlink" href="#bobaos-ws" title="Permalink to this headline">¶</a></h2>
@@ -373,140 +406,6 @@ bobaos sdk: ready
 <p>Try to send from any websocket client following request on port 49190</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">&quot;request_id&quot;</span><span class="p">:</span> <span class="mi">42</span><span class="p">,</span> <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;ping&quot;</span><span class="p">,</span> <span class="nt">&quot;payload&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">}</span>
 </pre></div>
-</div>
-<p>If everything is ok, create service file `/etc/systemd/system/bobaos_ws.service:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[Unit]
-Description=WebSocket server for bobaos.pub
-After=bobaos_pub.service
-
-[Service]
-User=pi
-ExecStart=/usr/bin/env bobaos-ws
-Restart=on-failure
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-</pre></div>
-</div>
-<p>Reload systemd, start and enable daemon:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>sudo systemctl daemon-reload
-sudo systemctl start bobaos_ws.service
-sudo systemctl enable bobaos_ws.service
-</pre></div>
-</div>
-<p>After that, to configure <code class="docutils literal notranslate"><span class="pre">bobaos.ws</span></code> edit <code class="docutils literal notranslate"><span class="pre">/usr/lib/node_modules/bobaos.ws/config.json</span></code> file.</p>
-</div>
-<div class="section" id="protocol">
-<span id="protocol"></span><h3>Protocol<a class="headerlink" href="#protocol" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="overview">
-<span id="overview"></span><h4>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h4>
-<p>Published messages to websocket are serialized JSON objects, containing required fields <code class="docutils literal notranslate"><span class="pre">request_id,</span> <span class="pre">method,</span> <span class="pre">payload</span></code>.
-For broadcasted messages <code class="docutils literal notranslate"><span class="pre">request_id</span></code> field is not used.</p>
-<p>For outgoing requests:</p>
-<ul class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">request_id</span></code> is used to receive response exactly to this request. If it is not defined then you will not receive response from server.</li>
-<li><code class="docutils literal notranslate"><span class="pre">method</span></code> is an API method.</li>
-<li><code class="docutils literal notranslate"><span class="pre">payload</span></code> depends on method. It may be datapoint id, array of ids, value, or null.</li>
-</ul>
-<p>Request:</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-  <span class="nt">&quot;request_id&quot;</span><span class="p">:</span> <span class="mi">420</span><span class="p">,</span>
-  <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;get parameter byte&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;payload&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>Response:</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-  <span class="nt">&quot;response_id&quot;</span><span class="p">:</span><span class="mi">420</span><span class="p">,</span>
-  <span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="s2">&quot;success&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;payload&quot;</span><span class="p">:[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">]</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="api-methods">
-<span id="api-methods"></span><h4>API methods<a class="headerlink" href="#api-methods" title="Permalink to this headline">¶</a></h4>
-<ul>
-<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">ping</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">null</span></code>.</p>
-<p>Returns <code class="docutils literal notranslate"><span class="pre">true/false</span></code> depending on running state of bobaos.pub service.</p>
-</li>
-<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">sdk</span> <span class="pre">state</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">null</span></code>.</p>
-<p>Check if connected to BAOS.</p>
-</li>
-<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">reset</span></code>.</p>
-<p>Restart SDK. Reload datapoints/server items.</p>
-</li>
-<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">description</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">null/id/[id1,</span> <span class="pre">..</span> <span class="pre">idN]</span></code>.</p>
-<p>Get description for datapoints with given ids. If payload is null then description for all datapoints will be returned.</p>
-</li>
-<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">value</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">id/[id1,</span> <span class="pre">..</span> <span class="pre">idN]</span></code>.</p>
-<p>Get value for datapoints with given ids.</p>
-</li>
-<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">stored</span> <span class="pre">value</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">id/[id1,</span> <span class="pre">..</span> <span class="pre">idN]</span></code>.</p>
-<p>Get value stored in bobaos.pub service. Do not send any data via UART.</p>
-</li>
-<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">set</span> <span class="pre">value</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">{id:</span> <span class="pre">i,</span> <span class="pre">value:</span> <span class="pre">v}/[{id:</span> <span class="pre">i1,</span> <span class="pre">value:</span> <span class="pre">v1},</span> <span class="pre">..</span> <span class="pre">{id:</span> <span class="pre">iN,</span> <span class="pre">value:</span> <span class="pre">vN}]</span></code></p>
-<p>Set datapoints value and send to bus. Keep in mind that after successful request, new datapoint value will be broadcasted to all websocket clients, including sender.</p>
-</li>
-<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">read</span> <span class="pre">value</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">id/[id1,</span> <span class="pre">..</span> <span class="pre">idN]</span></code>.</p>
-<p>Send read requests to KNX bus. Keep in mind that datapoint object should have active Update flag.
-If reading was successful then datapoint value will be broadcasted.</p>
-</li>
-<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">server</span> <span class="pre">item</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">null/id/[id1,</span> <span class="pre">..</span> <span class="pre">idN]</span></code>.</p>
-<p>Get server items with given id/ids. To get all server items use <code class="docutils literal notranslate"><span class="pre">null</span></code> as a payload.</p>
-</li>
-<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">set</span> <span class="pre">programming</span> <span class="pre">mode</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">1/0/true/false</span></code>.</p>
-<p>Send to BAOS request to go into programming mode.</p>
-</li>
-<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">programming</span> <span class="pre">mode</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">null</span></code>.</p>
-<p>Return current value of ProgrammingMode sever item.</p>
-</li>
-<li><p class="first">Method: <code class="docutils literal notranslate"><span class="pre">get</span> <span class="pre">parameter</span> <span class="pre">byte</span></code>. Payload: <code class="docutils literal notranslate"><span class="pre">id/[id1,</span> <span class="pre">..</span> <span class="pre">idN]</span></code>.</p>
-<p>Get parameter byte values for given ids.</p>
-</li>
-</ul>
-</div>
-<div class="section" id="communication-example">
-<span id="communication-example"></span><h4>Communication example<a class="headerlink" href="#communication-example" title="Permalink to this headline">¶</a></h4>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;ping&quot;, &quot;payload&quot;: null}
-{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:true}
-{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;get sdk state&quot;, &quot;payload&quot;: null}
-{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:&quot;ready&quot;}
-{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;reset&quot;, &quot;payload&quot;: null}
-{&quot;method&quot;:&quot;sdk state&quot;,&quot;payload&quot;:&quot;stop&quot;}
-{&quot;method&quot;:&quot;sdk state&quot;,&quot;payload&quot;:&quot;ready&quot;}
-{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:null}
-{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:1,&quot;value&quot;:23.6,&quot;raw&quot;:&quot;DJw=&quot;}}
-{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;get description&quot;, &quot;payload&quot;: 1}
-{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:{&quot;valid&quot;:&quot;true&quot;,&quot;id&quot;:&quot;1&quot;,&quot;length&quot;:&quot;2&quot;,&quot;dpt&quot;:&quot;dpt9&quot;,&quot;flag_priority&quot;:&quot;low&quot;,&quot;flag_communication&quot;:&quot;true&quot;,&quot;flag_read&quot;:&quot;false&quot;,&quot;flag_write&quot;:&quot;true&quot;,&quot;false&quot;:&quot;false&quot;,&quot;flag_readOnInit&quot;:&quot;false&quot;,&quot;flag_update&quot;:&quot;true&quot;,&quot;flag_transmit&quot;:&quot;true&quot;,&quot;value&quot;:&quot;23.6&quot;,&quot;raw&quot;:&quot;DJw=&quot;}}
-{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;get value&quot;, &quot;payload&quot;: 1}
-{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:{&quot;id&quot;:1,&quot;value&quot;:23.6,&quot;raw&quot;:&quot;DJw=&quot;}}
-{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:1,&quot;value&quot;:23.6,&quot;raw&quot;:&quot;DJw=&quot;}}
-{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;get stored value&quot;, &quot;payload&quot;: 1}
-{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:{&quot;id&quot;:1,&quot;value&quot;:23.6,&quot;raw&quot;:&quot;DJw=&quot;}}
-{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;set value&quot;, &quot;payload&quot;: {&quot;id&quot;: 103, &quot;value&quot;: false}}
-{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:[{&quot;id&quot;:103,&quot;value&quot;:false,&quot;raw&quot;:&quot;AA==&quot;}]}
-{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:[{&quot;id&quot;:103,&quot;value&quot;:false,&quot;raw&quot;:&quot;AA==&quot;}]}
-{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:107,&quot;value&quot;:false,&quot;raw&quot;:&quot;AA==&quot;}}
-{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:1,&quot;value&quot;:23.6,&quot;raw&quot;:&quot;DJw=&quot;}}
-{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;set value&quot;, &quot;payload&quot;: [{&quot;id&quot;: 102, &quot;value&quot;: true}, {&quot;id&quot;: 103, &quot;value&quot;: true}]}
-{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:[{&quot;id&quot;:102,&quot;value&quot;:true,&quot;raw&quot;:&quot;AQ==&quot;},{&quot;id&quot;:103,&quot;value&quot;:true,&quot;raw&quot;:&quot;AQ==&quot;}]}
-{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:[{&quot;id&quot;:102,&quot;value&quot;:true,&quot;raw&quot;:&quot;AQ==&quot;},{&quot;id&quot;:103,&quot;value&quot;:true,&quot;raw&quot;:&quot;AQ==&quot;}]}
-{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:107,&quot;value&quot;:true,&quot;raw&quot;:&quot;AQ==&quot;}}
-{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;read value&quot;, &quot;payload&quot;: [1, 105, 106]}
-{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:null}
-{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:1,&quot;value&quot;:22.7,&quot;raw&quot;:&quot;DG8=&quot;}}
-{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:105,&quot;value&quot;:false,&quot;raw&quot;:&quot;AA==&quot;}}
-{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:106,&quot;value&quot;:true,&quot;raw&quot;:&quot;AQ==&quot;}}
-{&quot;request_id&quot;: 42, &quot;method&quot;: &quot;get server item&quot;, &quot;payload&quot;: [1, 2, 3]}
-{&quot;response_id&quot;:42,&quot;method&quot;:&quot;success&quot;,&quot;payload&quot;:[{&quot;id&quot;:1,&quot;value&quot;:[0,0,197,8,0,3],&quot;raw&quot;:&quot;AADFCAAD&quot;},{&quot;id&quot;:2,&quot;value&quot;:[16],&quot;raw&quot;:&quot;EA==&quot;},{&quot;id&quot;:3,&quot;value&quot;:[18],&quot;raw&quot;:&quot;Eg==&quot;}]}
-{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:1,&quot;value&quot;:22.9,&quot;raw&quot;:&quot;DHk=&quot;}}
-{&quot;method&quot;:&quot;datapoint value&quot;,&quot;payload&quot;:{&quot;id&quot;:1,&quot;value&quot;:23.2,&quot;raw&quot;:&quot;DIg=&quot;}}
-</pre></div>
-</div>
-<p>Thank you for attention.</p>
 </div>
 </div>
 </div>
@@ -542,6 +441,7 @@ If reading was successful then datapoint value will be broadcasted.</p>
 <li class="toctree-l2"><a class="reference internal" href="#bobaos-ws">bobaos.ws</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">bobaos.pub API</a></li>
 </ul>
 
 <div class="relations">
@@ -549,6 +449,7 @@ If reading was successful then datapoint value will be broadcasted.</p>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="intro.html" title="previous chapter">Introduction</a></li>
+      <li>Next: <a href="api.html" title="next chapter">bobaos.pub API</a></li>
   </ul></li>
 </ul>
 </div>
